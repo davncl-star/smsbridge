@@ -47,4 +47,4 @@ android/gradle/wrapper/gradle-wrapper.jar
 _test_*.json
 
 # Records (短信記錄產物，保留 logs/ 但排除可能的暫存)
-records/
+records/\"_commit_msg.txt\"  
