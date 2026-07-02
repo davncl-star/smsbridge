@@ -1,0 +1,14 @@
+SMSBridge v0.2.0
+
+Phase 1: Computer-side FastAPI Telegram forwarder
+- FastAPI entry (GET /health, POST /api/sms)
+- Telegram Bot API wrapper (direct HTTP)
+- CLI subcommands (start/status/config)
+- 11 pytest tests
+
+Phase 2: Android-side Kotlin SMS monitor
+- Compose UI + permission management + connection indicator
+- SMS_RECEIVED broadcast receiver (dual SIM support)
+- ForegroundService + heartbeat(15s) + retry queue
+- OkHttp non-blocking HTTP client
+- Full pipeline tested on Xiaomi Mi8

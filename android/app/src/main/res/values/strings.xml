@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SMSBridge</string>
+
+    <!-- 通知渠道 -->
+    <string name="channel_service">SMSBridge 後台服務</string>
+    <string name="channel_service_desc">保持轉發服務運行</string>
+    <string name="channel_sms">新短信通知</string>
+    <string name="channel_sms_desc">轉發短信時的通知</string>
+
+    <!-- 連接狀態 -->
+    <string name="status_connected">已連接</string>
+    <string name="status_disconnected">未連接</string>
+    <string name="status_connecting">連接中…</string>
+
+    <!-- 權限 -->
+    <string name="perm_sms_rationale">SMSBridge 需要讀取短信權限才能轉發新短信到您的電腦。</string>
+    <string name="perm_phone_rationale">SMSBridge 需要讀取電話狀態以區分雙卡手機的 SIM 槽。</string>
+    <string name="perm_notification_rationale">SMSBridge 需要通知權限來顯示後台服務狀態。</string>
+
+    <!-- 設置 -->
+    <string name="server_url">服務器地址</string>
+    <string name="server_url_hint">http://127.0.0.1:8580</string>
+</resources>

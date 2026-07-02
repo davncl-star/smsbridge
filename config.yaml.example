@@ -1,0 +1,30 @@
+# SMSBridge · YAML 配置文件範本
+# 與 .env 二選一，優先級：.env > config.yaml
+
+server:
+  host: 127.0.0.1
+  port: 8580
+
+telegram:
+  bot_token: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+  chat_ids:
+    - 123456789  # 個人 Chat ID
+  # 群組示例（負數 ID）：
+  # - -1001234567890
+  parse_mode: "HTML"   # HTML | MarkdownV2
+  disable_web_page_preview: true
+
+logging:
+  level: INFO
+  file: logs/smsbridge.log
+
+# 可選增強（V1 不實現，留 V2）
+# filter:
+#   keywords_block:
+#     - "广告"
+#     - "验证码"
+#   regex_block: []
+# aggregate:
+#   window_seconds: 60
+# devices:
+#   allow: []   # 空 = 允許所有；非空 = 白名單設備 ID
