@@ -65,3 +65,37 @@ async def send_sms(sms: IncomingSMS, settings: Settings) -> tuple[bool, list[int
                 log.error("telegram http error chat=%s: %s", chat_id, exc)
 
     return bool(delivered), delivered, last_error
+
+
+async def send_text(text: str, settings: Settings) -> tuple[bool, list[int], str | None]:
+    """發送任意格式化文本到所有配置的 chat（用於聚合消息）。"""
+    if not settings.telegram_chat_ids:
+        return False, [], "no chat ids configured"
+
+    delivered: list[int] = []
+    last_error: str | None = None
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for chat_id in settings.telegram_chat_ids:
+            try:
+                resp = await client.post(
+                    f"{_API}/bot{settings.telegram_bot_token}/sendMessage",
+                    json={
+                        "chat_id": chat_id,
+                        "text": text,
+                        "parse_mode": settings.telegram_parse_mode,
+                        "disable_web_page_preview": settings.telegram_disable_preview,
+                    },
+                )
+                data = resp.json()
+                if resp.status_code == 200 and data.get("ok"):
+                    delivered.append(chat_id)
+                    log.info("delivered aggregated msg to chat=%s", chat_id)
+                else:
+                    last_error = str(data.get("description", resp.text))
+                    log.warning("telegram rejected aggregated: chat=%s err=%s", chat_id, last_error)
+            except httpx.HTTPError as exc:
+                last_error = repr(exc)
+                log.error("telegram http error aggregated chat=%s: %s", chat_id, exc)
+
+    return bool(delivered), delivered, last_error

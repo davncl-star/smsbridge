@@ -49,6 +49,37 @@ class Settings(BaseSettings):
     server_host: str = "127.0.0.1"
     server_port: int = 8580
 
+    # 內容過濾
+    filter_enabled: bool = True
+    filter_keywords_block: list[str] = Field(
+        default_factory=list,
+        description="關鍵詞黑名單，命中則不轉發。逗號分隔或 JSON 數組",
+    )
+    filter_regex_block: list[str] = Field(
+        default_factory=list,
+        description="正則黑名單，命中則不轉發。逗號分隔或 JSON 數組",
+    )
+
+    @field_validator("filter_keywords_block", "filter_regex_block", mode="before")
+    @classmethod
+    def _parse_str_list(cls, v):
+        """接受 list / JSON 字符串 / 逗號分隔字符串。"""
+        if v is None or v == "":
+            return []
+        if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("["):
+                return json.loads(v)
+            return [x.strip() for x in v.split(",") if x.strip()]
+        return v
+
+    # 消息聚合
+    aggregate_window: int = Field(
+        0,
+        ge=0,
+        description="消息聚合窗口（秒），0=關閉。同一號碼在此時間內的多條短信將合併爲一條",
+    )
+
     # 日誌
     log_level: str = "INFO"
     log_file: Path = Path("logs/smsbridge.log")

@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] — 2026-07-03
+
+### Added — Phase 1 增強：內容過濾 + 消息聚合
+
+- **`server/filter_engine.py`** — 短信過濾引擎
+  - 關鍵詞黑名單（大小寫不敏感）
+  - 正則黑名單
+  - 可開關（`filter_enabled`）
+- **`server/aggregator.py`** — 消息分組聚合
+  - 同一 (號碼, SIM) 第一條即時發送，後續 N 秒內合併
+  - 合併消息格式：第一條完整信息 + 後續僅列時間+正文
+  - 服務器關閉時自動沖刷殘留 buffer
+  - `aggregate_window=0` 關閉
+- **`server/telegram.py`** — 新增 `send_text()` 函數，支援發送預格式化文本
+- **`server/main.py`** — POST /api/sms 流程集成：過濾 → 聚合 → 轉發
+- **`server/config.py`** — 新增 `filter_*` 和 `aggregate_window` 配置字段
+- **測試** — 新增 `test_filter.py`（7 項） + `test_aggregator.py`（9 項），合計 **27 項通過**
+
+---
+
 ## [0.3.0] — 2026-07-03
 
 ### Added — Phase 3 · ADB 橋接與連接管理

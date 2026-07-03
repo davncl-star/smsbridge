@@ -3,8 +3,8 @@
 > 手機短信 → 本地服務器 → Telegram Bot。USB 連線 + ADB reverse，零雲依賴。
 
 ![Phase](https://img.shields.io/badge/phase-3%20%2F%204-green)
-![Version](https://img.shields.io/badge/version-0.3.0-lightgrey)
-![tests](https://img.shields.io/badge/tests-11%2F11-green)
+![Version](https://img.shields.io/badge/version-0.4.0-lightgrey)
+![tests](https://img.shields.io/badge/tests-27%2F27-green)
 
 ---
 
@@ -156,4 +156,4 @@ uv run pytest               # 11 項測試，覆蓋核心端點 + 配置解析 +
 
 ---
 
-<sub>v0.3.0 · 2026-07-03 · Phase 3 ADB 橋接交付 ✅</sub>
+<sub>v0.4.0 · 2026-07-03 · Phase 1 增強（內容過濾 + 消息聚合）</sub>
