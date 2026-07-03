@@ -8,8 +8,8 @@
 
 ```
 Phase 1 ─── 電腦端 Telegram 轉發 🌟 已就位（可啟動、可測試）
-Phase 2 ─── 手機端 SMS 監聽   🟢 代碼骨架完成，待真機聯調
-Phase 3 ─── ADB 橋接與連接管理 🔲 待開工
+Phase 2 ─── 手機端 SMS 監聽   🟢 已就位（Mi8 驗證通過）
+Phase 3 ─── ADB 橋接與連接管理 🟢 已就位（三平台脚本齊全）
 Phase 4 ─── 集成測試與發布    🔲 待開工
 ```
 
@@ -93,26 +93,39 @@ Content-Type: application/json
 
 ## Phase 3 · ADB 橋接與連接管理
 
-**狀態**：🔲 待開工（Phase 2 真機聯調後開始）
+**狀態**：🟢 **已就位** — 三平台脚本齊全，CLI 集成完成
 
-### 前置條件
+### 已交付
 
-- Phase 2 App 已在真機上運行，ADB 手動 `reverse` 確認可用
+| 文件 | 平台 | 功能 |
+|------|------|------|
+| `scripts/bridge.bat` | Windows batch | 一鍵 reverse；含錯誤提示 |
+| `scripts/bridge.sh` | Linux/macOS | 一鍵 reverse；含 --watch 模式 |
+| `scripts/bridge.ps1` | Windows PowerShell | 一鍵 reverse + --watch 熱插拔模式 |
+| `smsbridge bridge` CLI | 跨平台 | 調用平台對應脚本，轉發剩餘參數 |
+| `conftest.py` | pytest | 隔離 .env 避免測試依賴用戶本地配置 |
 
-### 任務分解
+### 使用方式
 
-| 序號 | 任務 | 預計工期 | 說明 |
-|------|------|----------|------|
-| 3.1 | `scripts/bridge.bat`：檢查 adb devices，執行 `adb reverse tcp:8580 tcp:8580`，輸出狀態 | 0.5 天 | Windows |
-| 3.2 | `scripts/bridge.sh`：同上，Linux/macOS | 0.5 天 | 跨平台 |
-| 3.3 | USB 熱插拔監聽：自動檢出新設備並執行 reverse（Windows 用 WMI / PowerShell，Linux 用 udev） | 1 天 | 可選 |
-| 3.4 | 電腦端集成 ADB 管理：CLI 子命令 `smsbridge bridge`（調用 scripts） | 0.5 天 | 依賴 Phase 1 CLI 框架 |
+**快速橋接（一次性）：**
+```bash
+uv run smsbridge bridge
+# 或
+scripts/bridge.sh / scripts/bridge.ps1
+```
+
+**熱插拔監聽（保持 reverse 存活）：**
+```bash
+uv run smsbridge bridge --watch
+# 或
+scripts/bridge.ps1 -Watch
+```
 
 ### 驗收標準
 
 - 插 USB → 執行脚本 → `adb reverse` 成功 → 手機端 App 狀態變綠
 - 拔 USB → 手機端心跳失敗 → 狀態變紅，本地排隊重試
-- 重新插 USB → 自動重連 → 排隊短信續發
+- 重新插 USB → --watch 模式自動重連
 
 ---
 
@@ -176,6 +189,7 @@ Phase 2 ──→ 真機聯調 ──→ Phase 3
 |------|------|------|
 | v0.1.0 | 2026-06-30 | Phase 1 骨架就位 |
 | v0.2.0 | 2026-07-01 | Phase 2 Android 端代碼骨架完成 |
+| v0.3.0 | 2026-07-03 | Phase 3 ADB 橋接脚本交付 |
 
 ---
 

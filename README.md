@@ -2,8 +2,8 @@
 
 > 手機短信 → 本地服務器 → Telegram Bot。USB 連線 + ADB reverse，零雲依賴。
 
-![Phase](https://img.shields.io/badge/phase-2%20%2F%204-green)
-![Version](https://img.shields.io/badge/version-0.2.0-lightgrey)
+![Phase](https://img.shields.io/badge/phase-3%20%2F%204-green)
+![Version](https://img.shields.io/badge/version-0.3.0-lightgrey)
 ![tests](https://img.shields.io/badge/tests-11%2F11-green)
 
 ---
@@ -27,7 +27,7 @@
 |-------|------|------|
 | **1** | 電腦端 Telegram 轉發（FastAPI） | 🟢 **已就位** |
 | **2** | Android 端 SMS 監聽（Kotlin） | 🟢 **已就位**（真機驗證通過） |
-| 3 | ADB 橋接與連接管理 | ⚪ 待開工 |
+| **3** | ADB 橋接與連接管理 | 🟢 **已就位**（三平台脚本齊全） |
 | 4 | 集成測試與發布 | ⚪ 待開工 |
 
 ---
@@ -83,7 +83,7 @@ smsbridge/
 │   ├── config.py                  # .env 加載（pydantic-settings）
 │   ├── telegram.py                # Bot API 封裝（直接 HTTP）
 │   ├── models.py                  # Pydantic 數據模型
-│   └── cli.py                     # smsbridge start/status/config
+│   └── cli.py                     # smsbridge start/status/config/bridge
 │
 ├── android/                       # Phase 2 · 手機端 Kotlin
 │   ├── app/src/main/java/com/example/smsbridge/
@@ -95,12 +95,17 @@ smsbridge/
 │   ├── gradle/libs.versions.toml  # Version Catalog
 │   └── ...                        # 完整 Gradle 構建配置
 │
+├── scripts/                       # Phase 3 · ADB 橋接
+│   ├── bridge.bat                 # Windows batch
+│   ├── bridge.ps1                 # Windows PowerShell（含 -Watch）
+│   └── bridge.sh                  # Linux/macOS（含 --watch）
+│
 ├── docs/
 │   ├── EXECUTION_PLAN.md          # 四階段執行路線圖
 │   └── index.md                   # 文檔索引
 │
-├── scripts/                       # Phase 3 預留
 ├── tests/                         # Python 測試（11 項通過）
+├── conftest.py                    # pytest .env 隔離
 ├── pyproject.toml                 # uv 包管理
 ├── .env.example                   # 環境變量範本
 ├── CHANGES.md                     # 變更日誌
@@ -115,6 +120,7 @@ smsbridge/
 uv run smsbridge start      # 啟動服務器
 uv run smsbridge status     # 查看配置/日志狀態
 uv run smsbridge config     # 打印當前生效配置
+uv run smsbridge bridge     # 一鍵 ADB reverse（--watch 熱插拔）
 ```
 
 ---
@@ -136,7 +142,6 @@ uv run pytest               # 11 項測試，覆蓋核心端點 + 配置解析 +
 
 ## 後續路線
 
-- **Phase 3**：`scripts/bridge.bat` + `bridge.sh`，自動 `adb reverse` + USB 熱插拔監聽
 - **Phase 4**：打包（APK / PyInstaller exe）、補 `INSTALL.md` / `CONFIGURATION.md`、GitHub release
 
 可選增強（V2）：內容過濾、消息聚合、多用戶推送、TLS 加密、WiFi 直連、Web 面板。
@@ -151,4 +156,4 @@ uv run pytest               # 11 項測試，覆蓋核心端點 + 配置解析 +
 
 ---
 
-<sub>v0.2.0 · 2026-07-02 · 全鏈路測試通過 ✅</sub>
+<sub>v0.3.0 · 2026-07-03 · Phase 3 ADB 橋接交付 ✅</sub>

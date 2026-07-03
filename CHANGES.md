@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] — 2026-07-03
+
+### Added — Phase 3 · ADB 橋接與連接管理
+
+- **`scripts/bridge.bat`** (Windows batch)：一鍵 `adb reverse`；含錯誤提示
+- **`scripts/bridge.sh`** (Linux/macOS)：一鍵 `adb reverse` + `--watch` 熱插拔模式
+- **`scripts/bridge.ps1`** (Windows PowerShell)：一鍵 `adb reverse` + `-Watch` 熱插拔模式
+- **`smsbridge bridge` CLI 子命令**：跨平台調用 bridge 脚本，轉發剩餘參數
+- **`conftest.py`**：測試會話開始時臨時移走 `.env`、結束時還原，確保測試不依賴用戶本地配置
+
+### Improved — 全平台 adb 自動定位
+
+- 三個 bridge 脚本均按 `PATH` → `$ANDROID_HOME` → `$ANDROID_SDK_ROOT` 順序查找 adb
+- 錯誤碼語意化：1 (adb 不可用) / 2 (未授權設備) / 4 (reverse 失敗)
+
+### Fixed
+
+- **測試在 `.env` 存在時失敗**：`conftest.py` 隔離 .env 避免污染測試
+
+---
+
 ## [0.2.0] — 2026-07-02
 
 ### Added — Phase 2 · Android 手機端 SMS 監聽
