@@ -17,7 +17,7 @@ Phase 4 ─── 集成測試與發布    🔲 待開工
 
 ## Phase 1 · 電腦端 Telegram 轉發
 
-**狀態**：🟢 **已就位** — 骨架可運行，11 項測試通過。
+**狀態**：🟢 **已就位** — 含內容過濾 + 消息聚合，27 項測試通過。
 
 ### 已交付
 
@@ -29,16 +29,19 @@ Phase 4 ─── 集成測試與發布    🔲 待開工
 | 數據模型 | `server/models.py` | IncomingSMS、ForwardResult、HealthResponse |
 | CLI 子命令 | `server/cli.py` | `smsbridge start/status/config` |
 | 配置模板 | `.env.example` | Telegram Bot Token + Chat ID + 監聽地址 |
-| 煙霧測試 | `tests/` | 11 用例，覆蓋健康檢查、轉發成功/失敗、配置解析、無 token 降級 |
+| 煙霧測試 | `tests/` | 27 用例，覆蓋健康檢查、轉發過濾/聚合/成功/失敗、配置解析、降級 |
 
-### 可選增強（Phase 1.5 — 若有餘力）
+### 已交付增強
+
+- [x] **短信內容過濾**（關鍵詞/正則黑名單）— `server/filter_engine.py`
+- [x] **消息分組聚合**（N 秒窗口內同一號碼合併）— `server/aggregator.py`
+- [x] **多用戶推送**（多個 Chat ID 已在 0.1.0 支援）
+
+### 餘下可選（可後續補充）
 
 - [ ] 補 `INSTALL.md`（pip / uv / PyInstaller 安裝說明）
 - [ ] 補 `CONFIGURATION.md`（配置項詳解）
 - [ ] 消息格式化支持自定義模板
-- [ ] 短信內容過濾（關鍵詞/正則黑名單）
-- [ ] 消息分組聚合（1 分鐘窗口內同一號碼合併）
-- [ ] 多用戶推送（多個 Chat ID 已完成，需 CLI 管理）
 
 ---
 
@@ -190,6 +193,7 @@ Phase 2 ──→ 真機聯調 ──→ Phase 3
 | v0.1.0 | 2026-06-30 | Phase 1 骨架就位 |
 | v0.2.0 | 2026-07-01 | Phase 2 Android 端代碼骨架完成 |
 | v0.3.0 | 2026-07-03 | Phase 3 ADB 橋接脚本交付 |
+| v0.4.0 | 2026-07-03 | Phase 1 增強：內容過濾 + 消息聚合 |
 
 ---
 

@@ -83,4 +83,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 發布追蹤
 
 - 首次正式發布目標：Phase 4 完成後 `v1.0.0`
-- 中途里程碑：`v0.1.0`（Phase 1）、`v0.2.0`（Phase 2）
+- 中途里程碑：`v0.1.0`（Phase 1）、`v0.2.0`（Phase 2）、`v0.3.0`（Phase 3）、`v0.4.0`（Phase 1 增強）
+
+[0.4.0]: https://github.com/davncl-star/smsbridge/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/davncl-star/smsbridge/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/davncl-star/smsbridge/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/davncl-star/smsbridge/releases/tag/v0.1.0

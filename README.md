@@ -50,6 +50,17 @@ TELEGRAM_BOT_TOKEN=<@BotFather 給的 Token>
 TELEGRAM_CHAT_IDS=<你的 Chat ID>
 ```
 
+**可選增強**（同文件加入）：
+
+```dotenv
+# 內容過濾（關鍵詞命中則不轉發）
+FILTER_KEYWORDS_BLOCK=广告, spam
+FILTER_REGEX_BLOCK=\d{6,}
+
+# 消息聚合（同一號碼 N 秒內合併；0=關閉）
+AGGREGATE_WINDOW=60
+```
+
 啟動：
 
 ```bash
@@ -83,6 +94,8 @@ smsbridge/
 │   ├── config.py                  # .env 加載（pydantic-settings）
 │   ├── telegram.py                # Bot API 封裝（直接 HTTP）
 │   ├── models.py                  # Pydantic 數據模型
+│   ├── filter_engine.py           # 內容過濾引擎（關鍵詞 + 正則黑名單）
+│   ├── aggregator.py              # 消息聚合器（N 秒窗口內合併）
 │   └── cli.py                     # smsbridge start/status/config/bridge
 │
 ├── android/                       # Phase 2 · 手機端 Kotlin
@@ -104,7 +117,7 @@ smsbridge/
 │   ├── EXECUTION_PLAN.md          # 四階段執行路線圖
 │   └── index.md                   # 文檔索引
 │
-├── tests/                         # Python 測試（11 項通過）
+├── tests/                         # Python 測試（27 項通過）
 ├── conftest.py                    # pytest .env 隔離
 ├── pyproject.toml                 # uv 包管理
 ├── .env.example                   # 環境變量範本
@@ -129,14 +142,14 @@ uv run smsbridge bridge     # 一鍵 ADB reverse（--watch 熱插拔）
 
 ```bash
 cd smsbridge
-uv run pytest               # 11 項測試，覆蓋核心端點 + 配置解析 + 降級策略
+uv run pytest               # 27 項測試，覆蓋核心端點 + 過濾 + 聚合 + 配置解析 + 降級策略
 ```
 
 ---
 
 ## 變更日誌
 
-[CHANGES.md](CHANGES.md) — v0.1.0（Phase 1）→ v0.2.0（Phase 2）
+[CHANGES.md](CHANGES.md) — v0.1.0 → v0.4.0
 
 ---
 
@@ -144,7 +157,7 @@ uv run pytest               # 11 項測試，覆蓋核心端點 + 配置解析 +
 
 - **Phase 4**：打包（APK / PyInstaller exe）、補 `INSTALL.md` / `CONFIGURATION.md`、GitHub release
 
-可選增強（V2）：內容過濾、消息聚合、多用戶推送、TLS 加密、WiFi 直連、Web 面板。
+可選增強（V2）：多用戶推送、TLS 加密、WiFi 直連、Web 面板。
 
 ---
 
