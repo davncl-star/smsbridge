@@ -3,6 +3,7 @@
 | 文檔 | 說明 |
 |------|------|
 | `EXECUTION_PLAN.md` | 四階段執行路線圖：任務、依賴、驗收標準、發布清單 |
+| `ROADMAP.md` | 功能構思：短線 / 中線 / 長線功能提案，含難度與依賴 |
 | `../README.md` | 項目根 README：快速開始、目錄結構、架構 |
 | `../.env.example` | 環境變量範本 |
 | `../config.yaml.example` | YAML 配置範本（V2） |
