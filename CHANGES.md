@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added — Phase 3 · 真機整合驗證通過
 
+- **systemd user units 部署**：
+  - `smsbridge.service` — FastAPI 服務器（自動重啟 + 日誌重定向）
+  - `smsbridge-bridge.service` — ADB reverse 熱插拔守護（PartOf 關聯）
+  - 兩者皆已 `systemctl --user enable`，開機自動啟動
+
 - **MI 8（Xiaomi）真機端到端測試通過**：ADB reverse 橋接 → 簡訊即時轉發 → Telegram 推送
 - **實測記錄**：2026-07-04 15:57 首批兩通「立創商城驗證碼」短信成功送達 @Dav_Reporter_claw_bot
 - **ADB 橋接工作流驗證**：`adb reverse tcp:8580 tcp:8580` 一次建立、USB 斷連後需重建
@@ -19,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **`gradle-wrapper.jar` 缺失**：非 git tracked 文件，首次 clone 需 `gradle wrapper --gradle-version 8.9` 重新生成
+- **bridge.sh 無法直接作為 systemd ExecStart**：需透過 `/usr/bin/bash` 間接執行（ExecStart=/usr/bin/bash .../bridge.sh --watch）
 - **SDK 路徑未配置**：添加 `local.properties`（`sdk.dir=/home/davnclai/Android/Sdk`），已入 `.gitignore`
 
 ---
