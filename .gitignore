@@ -50,3 +50,4 @@ _test_*.json
 records/\"_commit_msg.txt\"  
 \"_commit*.txt\"  
 _commit*.txt 
+.understand-anything/

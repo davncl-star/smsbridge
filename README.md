@@ -2,9 +2,10 @@
 
 > 手機短信 → 本地服務器 → Telegram Bot。USB 連線 + ADB reverse，零雲依賴。
 
-![Phase](https://img.shields.io/badge/phase-3%20%2F%204-green)
-![Version](https://img.shields.io/badge/version-0.4.0-lightgrey)
+![Phase](https://img.shields.io/badge/phase-3.5%20%2F%204-green)
+![Version](https://img.shields.io/badge/version-0.5.0-lightgrey)
 ![tests](https://img.shields.io/badge/tests-27%2F27-green)
+![device](https://img.shields.io/badge/verified-Xiaomi%20MI%208-blue)
 
 ---
 
@@ -26,9 +27,15 @@
 | Phase | 內容 | 狀態 |
 |-------|------|------|
 | **1** | 電腦端 Telegram 轉發（FastAPI） | 🟢 **已就位** |
-| **2** | Android 端 SMS 監聽（Kotlin） | 🟢 **已就位**（真機驗證通過） |
+| **2** | Android 端 SMS 監聽（Kotlin） | 🟢 **已就位**（MI 8 真機驗證通過） |
 | **3** | ADB 橋接與連接管理 | 🟢 **已就位**（三平台脚本齊全） |
 | 4 | 集成測試與發布 | ⚪ 待開工 |
+
+## 真機驗證
+
+| 機型 | Android 版本 | 結果 |
+|------|-------------|------|
+| Xiaomi MI 8 | Android 10 (MIUI) | 🟢 短信轉發成功（2026-07-04） |
 
 ---
 
@@ -62,10 +69,22 @@ uv run smsbridge start
 
 ```bash
 cd smsbridge/android
-gradlew assembleDebug               # 構建 APK
+
+# （首次 clone 缺少 gradle-wrapper.jar，需先生成）
+gradle wrapper --gradle-version 8.9  # 或從 Gradle 8.9 發布包運行
+
+# 構建 APK
+gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb reverse tcp:8580 tcp:8580       # 端口橋接
+
+# 若之前安裝過簽名不同的版本，先卸載
+adb uninstall com.example.smsbridge
 ```
+
+> **注意**：`gradle-wrapper.jar` 不 git tracked，首次 clone 後需重新生成。Android SDK 路徑通過 `local.properties`（`sdk.dir=...`）指定，已入 `.gitignore`。
+
+> **MIUI 注意**：MI 8 等 Xiaomi 手機需在「設定 → 應用 → SMSBridge → 自啟動」開啟自啟動權限，否則殺後台後收不到轉發。
 
 在手機上：
 1. 打開 SMSBridge App → 授予簡訊 / 電話 / 通知權限
