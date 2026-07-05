@@ -52,13 +52,16 @@ class SmsHttpClient(private val baseUrl: String = DEFAULT_URL) {
         })
     }
 
-    /** 健康檢查（心跳），用於判斷電腦端是否在線。 */
+    /** 健康檢查（心跳），用於判斷電腦端是否在線。
+     * @param deviceId 設備 ID，附加為 query param 支援多設備心跳監控。
+     */
     fun checkHealth(
+        deviceId: String,
         onAlive: () -> Unit,
         onDead: (String) -> Unit,
     ) {
         val request = Request.Builder()
-            .url("$baseUrl/health")
+            .url("$baseUrl/health?device_id=$deviceId")
             .get()
             .build()
 

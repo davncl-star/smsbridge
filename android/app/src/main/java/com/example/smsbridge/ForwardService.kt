@@ -126,6 +126,7 @@ class ForwardService : Service() {
         executor.scheduleWithFixedDelay({
             heartbeatTick++
             httpClient.checkHealth(
+                deviceId = deviceId,
                 onAlive = {
                     updateState(State.CONNECTED)
                     processRetryQueue()
