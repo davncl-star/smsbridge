@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `server/cli.py`：新增 filter 和 agg 子解析器
+
+- **`docs/INSTALL.md`**：完整安裝指南（系統要求、一鍵部署、詳細步驟、排錯 FAQ）
+- **`docs/CONFIGURATION.md`**：配置項完整參考（含 CLI 管理命令範例）
 - `server/filter_engine.py`：新增 `@property` 存取子
 
 ---
