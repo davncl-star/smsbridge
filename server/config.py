@@ -112,7 +112,26 @@ class Settings(BaseSettings):
         return bool(self.telegram_bot_token) and ":" in self.telegram_bot_token
 
 
+def find_env_path() -> Path | None:
+    """從當前目錄或父目錄尋找 .env 檔案。"""
+    for p in [Path.cwd(), Path.cwd().parent]:
+        env = p / ".env"
+        if env.exists():
+            return env
+    return None
+
+
 @lru_cache
-def get_settings() -> Settings:
-    """單例配置。首次調用時從 .env / 環境變量讀取。"""
+def _cached_settings() -> Settings:
     return Settings()  # type: ignore[call-arg]
+
+
+def get_settings(force: bool = False) -> Settings:
+    """讀取配置。
+
+    Args:
+        force: 若 True，跳過快取重新從 .env / 環境變量讀取。
+    """
+    if force:
+        _cached_settings.cache_clear()
+    return _cached_settings()

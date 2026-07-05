@@ -155,6 +155,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Web 管理面板（P2-9）
+from .web import router as web_router
+try:
+    app.include_router(web_router)
+    log.info("web panel mounted at / and /settings")
+except Exception as exc:
+    # Jinja2 模板缺失時不阻礙核心服務
+    log.warning("web panel not mounted: %s", exc)
+
 
 @app.get("/health", response_model=HealthResponse)
 async def health(device_id: str | None = None) -> HealthResponse:

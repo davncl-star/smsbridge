@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SMSBridge · 設定</title>
+  <style>
+    :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --green: #3fb950; --red: #f85149; --orange: #d29922; --blue: #58a6ff; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 24px; }
+    .container { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 1.6rem; margin-bottom: 4px; }
+    .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 24px; }
+    nav { display: flex; gap: 12px; margin-bottom: 24px; }
+    nav a { color: var(--muted); text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; }
+    nav a.active { background: rgba(56,139,253,0.15); color: var(--blue); }
+    nav a:hover { background: var(--card); color: var(--text); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+    .card h2 { font-size: 1rem; margin-bottom: 12px; }
+
+    /* 配置總覽 */
+    .config-table { width: 100%; border-collapse: collapse; }
+    .config-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .config-table td:first-child { color: var(--muted); white-space: nowrap; width: 140px; }
+    .config-table code { font-size: 0.8rem; }
+
+    /* 表單 */
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.9rem; }
+    .form-group input:focus { border-color: var(--blue); outline: none; }
+    .btn { padding: 8px 18px; background: #238636; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+    .btn:hover { background: #2ea043; }
+    .btn.danger { background: #da3633; }
+    .btn.danger:hover { background: #f85149; }
+    .btn.small { padding: 4px 12px; font-size: 0.75rem; }
+    .btn.outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn.outline:hover { background: var(--card); }
+
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; padding: 3px 10px; border-radius: 12px; background: rgba(56,139,253,0.1); border: 1px solid rgba(56,139,253,0.2); }
+    .tag .remove { cursor: pointer; color: var(--muted); font-size: 0.9rem; margin-left: 2px; }
+    .tag .remove:hover { color: var(--red); }
+
+    .msg { padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 0.85rem; display: none; }
+    .msg.success { display: block; background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3); color: var(--green); }
+    .msg.error { display: block; background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); color: var(--red); }
+
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; border-radius: 24px; background: #333; transition: .2s; }
+    .slider:before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; border-radius: 50%; background: #fff; transition: .2s; }
+    .switch input:checked + .slider { background: var(--green); }
+    .switch input:checked + .slider:before { transform: translateX(20px); }
+
+    @media (max-width: 600px) { .container { padding: 0; } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>⚙️ SMSBridge 設定</h1>
+  <div class="subtitle">v{{ version }}</div>
+
+  <nav>
+    <a href="/">📊 儀表板</a>
+    <a href="/settings" class="active">⚙️ 設定</a>
+  </nav>
+
+  <!-- 消息顯示 -->
+  <div id="msg" class="msg"></div>
+
+  <!-- 當前配置總覽 -->
+  <div class="card">
+    <h2>📋 當前配置</h2>
+    <table class="config-table">
+      <tr><td>Bot Token</td><td><code>{{ config.telegram_bot_token }}</code></td></tr>
+      <tr><td>Chat IDs</td><td><code>{{ config.telegram_chat_ids }}</code></td></tr>
+      <tr><td>監聽位置</td><td><code>{{ config.server_host }}:{{ config.server_port }}</code></td></tr>
+      <tr><td>日誌級別</td><td><code>{{ config.log_level }}</code></td></tr>
+      <tr><td>日誌路徑</td><td><code>{{ config.log_file }}</code></td></tr>
+      <tr><td>解析模式</td><td><code>{{ config.telegram_parse_mode }}</code></td></tr>
+    </table>
+  </div>
+
+  <!-- 過濾規則管理 -->
+  <div class="card" id="filter-section">
+    <h2>🔇 內容過濾</h2>
+    <div class="form-group">
+      <label>過濾器開關</label>
+      <label class="switch">
+        <input type="checkbox" id="filter-toggle" {% if config.filter_enabled %}checked{% endif %}>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>關鍵詞黑名單（完全匹配，命中則不轉發）</label>
+      <div class="tag-list" id="keyword-tags">
+        {% for kw in config.filter_keywords_block %}
+        <span class="tag">{{ kw }} <span class="remove" data-keyword="{{ kw }}" onclick="removeKeyword(this)">✕</span></span>
+        {% endfor %}
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="new-keyword" placeholder="輸入關鍵詞..." style="flex:1;">
+        <button class="btn small" onclick="addKeyword()">新增</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>正則表達式黑名單（PCRE 語法，命中則不轉發）</label>
+      <div class="tag-list" id="regex-tags">
+        {% for pat in config.filter_regex_block %}
+        <span class="tag"><code>{{ pat }}</code> <span class="remove" data-pattern="{{ pat }}" onclick="removeRegex(this)">✕</span></span>
+        {% endfor %}
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="new-regex" placeholder="輸入正則表達式，如 驗證碼.*\d{6}" style="flex:1;font-family:monospace;">
+        <button class="btn small" onclick="addRegex()">新增</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 聚合設定 -->
+  <div class="card">
+    <h2>📦 消息聚合</h2>
+    <div class="form-group">
+      <label>聚合窗口（秒，0=關閉）</label>
+      <div style="display:flex;gap:8px;">
+        <input type="number" id="agg-window" value="{{ config.aggregate_window }}" min="0" max="3600" style="flex:1;">
+        <button class="btn small" onclick="setAgg()">更新</button>
+      </div>
+      <p style="color:var(--muted);font-size:0.75rem;margin-top:4px;">
+        {{ '✅ 已啟用：同一號碼 '~ config.aggregate_window ~' 秒內的多條短信將合併為一條' if config.aggregate_window > 0 else '⏸️ 已關閉：每條短信獨立發送' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- 心跳設定 -->
+  <div class="card">
+    <h2>💓 心跳告警</h2>
+    <div class="form-group">
+      <label>逾時秒數（分鐘建議 1–5）</label>
+      <div style="display:flex;gap:8px;">
+        <input type="number" id="heartbeat-timeout" value="{{ config.heartbeat_timeout }}" min="30" max="600" style="flex:1;">
+        <button class="btn small" onclick="setHeartbeat()">更新</button>
+      </div>
+      <p style="color:var(--muted);font-size:0.75rem;margin-top:4px;">超過此時間未收到心跳，將透過 Telegram 發送離線告警。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 工具函數 ──────────────────────────────────────────────────────────────
+
+function showMsg(text, type='success') {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+// ── 過濾器切換 ───────────────────────────────────────────────────────────
+
+document.getElementById('filter-toggle')?.addEventListener('change', async function() {
+  const enabled = this.checked;
+  const form = new FormData();
+  form.append('enabled', enabled ? 'true' : 'false');
+  try {
+    const r = await fetch('/api/web/filter/enable', { method: 'POST', body: form });
+    const data = await r.json();
+    if (data.ok) showMsg('過濾器已' + (enabled ? '開啟' : '關閉'));
+  } catch(e) { showMsg('設定失敗: ' + e.message, 'error'); }
+});
+
+// ── 關鍵詞管理 ────────────────────────────────────────────────────────────
+
+async function addKeyword() {
+  const input = document.getElementById('new-keyword');
+  const kw = input.value.trim();
+  if (!kw) return;
+  const form = new FormData();
+  form.append('keyword', kw);
+  try {
+    const r = await fetch('/api/web/filter/add', { method: 'POST', body: form });
+    const data = await r.json();
+    if (data.ok) {
+      input.value = '';
+      location.reload();
+    }
+  } catch(e) { showMsg('新增失敗: ' + e.message, 'error'); }
+}
+
+async function removeKeyword(el) {
+  const kw = el.dataset.keyword;
+  const form = new FormData();
+  form.append('keyword', kw);
+  try {
+    const r = await fetch('/api/web/filter/remove', { method: 'POST', body: form });
+    const data = await r.json();
+    if (data.ok) location.reload();
+  } catch(e) { showMsg('移除失敗: ' + e.message, 'error'); }
+}
+
+// ── 正則表達式管理 ──────────────────────────────────────────────────────────
+
+async function addRegex() {
+  const input = document.getElementById('new-regex');
+  const pat = input.value.trim();
+  if (!pat) return;
+  const form = new FormData();
+  form.append('pattern', pat);
+  try {
+    const r = await fetch('/api/web/filter/regex/add', { method: 'POST', body: form });
+    const data = await r.json();
+    if (data.ok) {
+      input.value = '';
+      location.reload();
+    }
+  } catch(e) { showMsg('新增失敗: ' + e.message, 'error'); }
+}
+
+async function removeRegex(el) {
+  const pat = el.dataset.pattern;
+  const form = new FormData();
+  form.append('pattern', pat);
+  try {
+    const r = await fetch('/api/web/filter/regex/remove', { method: 'POST', body: form });
+    const data = await r.json();
+    if (data.ok) location.reload();
+  } catch(e) { showMsg('移除失敗: ' + e.message, 'error'); }
+}
+
+// ── 聚合設定 ──────────────────────────────────────────────────────────────
+
+async function setAgg() {
+  const val = parseInt(document.getElementById('agg-window').value);
+  if (isNaN(val) || val < 0) { showMsg('請輸入有效秒數', 'error'); return; }
+  const form = new FormData();
+  form.append('window', String(val));
+  try {
+    const r = await fetch('/api/web/agg/set', { method: 'POST', body: form });
+    const data = await r.json();
+    if (data.ok) showMsg('聚合窗口已設為 ' + val + ' 秒' + (val === 0 ? '（關閉）' : ''));
+  } catch(e) { showMsg('設定失敗: ' + e.message, 'error'); }
+}
+
+// ── 心跳設定 ──────────────────────────────────────────────────────────────
+
+async function setHeartbeat() {
+  const val = parseInt(document.getElementById('heartbeat-timeout').value);
+  if (isNaN(val) || val < 30) { showMsg('請輸入 ≥30 的秒數', 'error'); return; }
+  const form = new FormData();
+  form.append('timeout', String(val));
+  try {
+    const r = await fetch('/api/web/heartbeat/set', { method: 'POST', body: form });
+    const data = await r.json();
+    if (data.ok) showMsg('心跳逾時已設為 ' + val + ' 秒');
+  } catch(e) { showMsg('設定失敗: ' + e.message, 'error'); }
+}
+</script>
+</body>
+</html>

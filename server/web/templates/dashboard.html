@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SMSBridge · 儀表板</title>
+  <style>
+    :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --green: #3fb950; --red: #f85149; --orange: #d29922; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 24px; }
+    .container { max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 1.6rem; margin-bottom: 4px; }
+    .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .card h2 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .card .value { font-size: 1.4rem; font-weight: 600; }
+    .card .value.green { color: var(--green); }
+    .card .value.red { color: var(--red); }
+    .card .value.orange { color: var(--orange); }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .dot.green { background: var(--green); }
+    .dot.red { background: var(--red); }
+    .dot.orange { background: var(--orange); }
+    .badge { display: inline-block; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; background: rgba(63,185,80,0.15); color: var(--green); font-weight: 500; }
+    .badge.off { background: rgba(248,81,73,0.15); color: var(--red); }
+    nav { display: flex; gap: 12px; margin-bottom: 24px; }
+    nav a { color: var(--muted); text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; }
+    nav a.active { background: rgba(56,139,253,0.15); color: #58a6ff; }
+    nav a:hover { background: var(--card); color: var(--text); }
+    .empty { color: var(--muted); font-style: italic; padding: 12px 0; }
+    @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>📡 SMSBridge</h1>
+  <div class="subtitle">v{{ version }} · uptime {{ uptime }}</div>
+
+  <nav>
+    <a href="/" class="active">📊 儀表板</a>
+    <a href="/settings">⚙️ 設定</a>
+  </nav>
+
+  <!-- 概覽卡片 -->
+  <div class="grid">
+    <div class="card">
+      <h2>連結設備</h2>
+      <div class="value {% if devices %}green{% else %}orange{% endif %}">{{ devices|length }}</div>
+    </div>
+    <div class="card">
+      <h2>過濾器</h2>
+      <div class="value {% if filter_enabled %}green{% else %}orange{% endif %}">{{ '開啟' if filter_enabled else '關閉' }}</div>
+    </div>
+    <div class="card">
+      <h2>聚合窗口</h2>
+      <div class="value">{{ agg_window }}s</div>
+    </div>
+    <div class="card">
+      <h2>服務運行時長</h2>
+      <div class="value">{{ uptime }}</div>
+    </div>
+  </div>
+
+  <!-- 設備列表 -->
+  <div class="card" style="margin-bottom:24px;">
+    <h2 style="margin-bottom:12px;">已連接設備</h2>
+    <table>
+      <thead><tr><th>狀態</th><th>設備 ID</th><th>上次心跳</th></tr></thead>
+      <tbody>
+        {% if devices %}
+          {% for d in devices %}
+          <tr>
+            <td><span class="dot green"></span></td>
+            <td><code>{{ d.id }}</code></td>
+            <td>{{ d.last_seen }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="3"><div class="empty">尚無設備連線</div></td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 過濾規則摘要 -->
+  <div class="card" style="margin-bottom:24px;">
+    <h2 style="margin-bottom:12px;">過濾規則</h2>
+    <table>
+      <thead><tr><th>關鍵詞</th><th>正則表達式</th></tr></thead>
+      <tbody>
+        {% if filter_keywords or filter_patterns %}
+          {% set max_rows = filter_keywords|length if filter_keywords|length > filter_patterns|length else filter_patterns|length %}
+          {% for i in range(max_rows) %}
+          <tr>
+            <td><code>{{ filter_keywords[i] if i < filter_keywords|length else '' }}</code></td>
+            <td><code>{{ filter_patterns[i] if i < filter_patterns|length else '' }}</code></td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="2"><div class="empty">無過濾規則（所有短信皆可轉發）</div></td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 最新 SMS 點此查看 logs -->
+  <div class="card">
+    <h2 style="margin-bottom:4px;">快速鏈接</h2>
+    <p style="color:var(--muted);font-size:0.85rem;">
+      📄 日誌檔案：<code>{{ log_file }}</code><br>
+      📱 手機端 API：<code>{{ server_host }}:{{ server_port }}/api/sms</code><br>
+      ❤️ 心跳端點：<code>{{ server_host }}:{{ server_port }}/health</code>
+    </p>
+  </div>
+</div>
+</body>
+</html>

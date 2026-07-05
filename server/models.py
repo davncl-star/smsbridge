@@ -36,3 +36,20 @@ class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
     version: str
     uptime_seconds: float
+
+
+class SettingsRead(BaseModel):
+    """Web 面板設定頁面的唯讀配置視圖。"""
+
+    server_host: str
+    server_port: int
+    telegram_bot_token: str
+    telegram_chat_ids: list[int]
+    telegram_parse_mode: str
+    log_level: str
+    log_file: str
+    filter_enabled: bool
+    filter_keywords_block: list[str]
+    filter_regex_block: list[str]
+    aggregate_window: int
+    heartbeat_timeout: int

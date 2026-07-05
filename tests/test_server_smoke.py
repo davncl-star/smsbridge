@@ -14,8 +14,8 @@ def configured_env(monkeypatch):
     monkeypatch.setenv("TELEGRAM_CHAT_IDS", "123456789, -100987654321")
     monkeypatch.setenv("LOG_LEVEL", "WARNING")
     # 清掉 lru_cache，避免跨測試污染
-    from server.config import get_settings
-    get_settings.cache_clear()
+    from server.config import _cached_settings
+    _cached_settings.cache_clear()
 
 
 def test_health(configured_env) -> None:
@@ -33,12 +33,12 @@ def test_health(configured_env) -> None:
 
 def test_api_sms_unconfigured(monkeypatch) -> None:
     """未配 token 時 /api/sms 應返回 503。"""
-    from server.config import get_settings
+    from server.config import _cached_settings
     from server.main import app
 
     monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
     monkeypatch.delenv("TELEGRAM_CHAT_IDS", raising=False)
-    get_settings.cache_clear()
+    _cached_settings.cache_clear()
 
     with TestClient(app) as client:
         resp = client.post("/api/sms", json={
