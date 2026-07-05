@@ -80,9 +80,18 @@ class Settings(BaseSettings):
         description="消息聚合窗口（秒），0=關閉。同一號碼在此時間內的多條短信將合併爲一條",
     )
 
-    # 日誌
+    # 日誌（P1-5 RotatingFileHandler）
     log_level: str = "INFO"
     log_file: Path = Path("logs/smsbridge.log")
+    log_max_bytes: int = 5 * 1024 * 1024  # 5MB
+    log_backup_count: int = 3
+
+    # 心跳告警（P0-2）
+    heartbeat_timeout: int = Field(
+        120,
+        ge=30,
+        description="手機心跳逾時秒數，超過此值未收到心跳則發送 Telegram 告警",
+    )
 
     @property
     def has_token(self) -> bool:

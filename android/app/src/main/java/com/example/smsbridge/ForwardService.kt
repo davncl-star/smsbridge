@@ -145,8 +145,13 @@ class ForwardService : Service() {
     private fun updateState(state: State) {
         if (_currentState != state) {
             _currentState = state
+            // 更新前台通知文字
+            val nm = getSystemService(NotificationManager::class.java)
+            nm.notify(NOTIFY_ID, buildServiceNotification())
+            // 廣播給 Activity（含時間戳）
             val intent = Intent(ACTION_STATE_CHANGED).apply {
                 putExtra(EXTRA_STATE, state.name)
+                putExtra(EXTRA_TIMESTAMP, System.currentTimeMillis())
             }
             sendBroadcast(intent)
         }
@@ -177,9 +182,15 @@ class ForwardService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
 
+        val statusText = when (_currentState) {
+            State.CONNECTED -> getString(R.string.status_connected)
+            State.DISCONNECTED -> getString(R.string.status_disconnected)
+            State.CHECKING -> getString(R.string.status_connecting)
+        }
+
         return Notification.Builder(this, CHANNEL_ID)
             .setContentTitle("SMSBridge")
-            .setContentText(getString(R.string.status_disconnected))
+            .setContentText(statusText)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentIntent(pendingOpen)
             .setOngoing(true)
@@ -202,6 +213,7 @@ class ForwardService : Service() {
 
         const val ACTION_STATE_CHANGED = "com.example.smsbridge.STATE_CHANGED"
         const val EXTRA_STATE = "state"
+        const val EXTRA_TIMESTAMP = "timestamp_ms"
 
         // 當前連接狀態（線程安全用於單線程 executor，讀取用 @Volatile）
         @Volatile

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.1] — 2026-07-05
+
+### Added
+
+- **通知欄狀態同步**（P0-1 增強）：斷線重連後 Notification bar 文字即時更新為「已連接」/「未連接」
+- **App 內 Log Panel**：深色終端風格的連接日誌面板，自動記錄每次斷線/重連事件（含時間戳）
+  - 最新事件置頂
+  - 彩色標示：綠色=已連接、紅色=未連接
+  - 「清除日誌」按鈕
+
+### Changed
+
+- `ForwardService.kt`：`updateState()` 現在同時更新 Notification 內容文字，並在廣播中加入時間戳
+- `MainActivity.kt`：UI 重建，新增全屏 Log Panel + 清除按鈕
+
+---
+
 ## [0.5.0] — 2026-07-04
 
 ### Added — Phase 3 · 真機整合驗證通過
