@@ -28,6 +28,9 @@ class ForwardService : Service() {
 
     private lateinit var httpClient: SmsHttpClient
     private lateinit var deviceId: String
+    private var serverUrl: String = DEFAULT_URL
+    private var wifiUrl: String = ""
+    private var primaryDead: Boolean = false
     private val executor = Executors.newSingleThreadScheduledExecutor()
 
     /** 待重試隊列（線程安全由 executor 串行保證） */
@@ -40,11 +43,14 @@ class ForwardService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        httpClient = SmsHttpClient(getServerUrl(this))
+        val prefs = getSharedPreferences("smsbridge", Context.MODE_PRIVATE)
+        serverUrl = prefs.getString("server_url", DEFAULT_URL) ?: DEFAULT_URL
+        wifiUrl = prefs.getString("wifi_url", "") ?: ""
+        httpClient = SmsHttpClient(serverUrl)
         deviceId = getOrCreateDeviceId(this)
         createNotificationChannel()
         startHeartbeat()
-        updateState(State.DISCONNECTED)
+        updateState(State.DISCONNECTED, false)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -128,13 +134,45 @@ class ForwardService : Service() {
             httpClient.checkHealth(
                 deviceId = deviceId,
                 onAlive = {
+                    primaryDead = false
                     updateState(State.CONNECTED)
                     processRetryQueue()
                 },
                 onDead = { err ->
-                    updateState(State.DISCONNECTED)
-                    if ((heartbeatTick % 4) == 0L) {
-                        log("heartbeat: $err")
+                    val wifi = wifiUrl
+                    if (wifi.isNotEmpty() && !primaryDead) {
+                        primaryDead = true
+                        log("primary dead, trying wifi fallback: $wifi")
+                        val wifiClient = SmsHttpClient(wifi)
+                        wifiClient.checkHealth(
+                            deviceId = deviceId,
+                            onAlive = {
+                                httpClient = wifiClient
+                                log("wifi fallback connected")
+                                updateState(State.CONNECTED)
+                                processRetryQueue()
+                            },
+                            onDead = { wifiErr ->
+                                log("wifi fallback also dead: $wifiErr")
+                                httpClient = SmsHttpClient(serverUrl)
+                                primaryDead = false
+                                updateState(State.DISCONNECTED)
+                                if ((heartbeatTick % 4) == 0L) {
+                                    log("heartbeat: primary=$err wifi=$wifiErr")
+                                }
+                            },
+                        )
+                    } else if (wifi.isNotEmpty() && primaryDead) {
+                        httpClient = SmsHttpClient(serverUrl)
+                        primaryDead = false
+                        if ((heartbeatTick % 4) == 0L) {
+                            log("trying fallback back to primary: $err")
+                        }
+                    } else {
+                        updateState(State.DISCONNECTED)
+                        if ((heartbeatTick % 4) == 0L) {
+                            log("heartbeat: $err")
+                        }
                     }
                 },
             )
@@ -143,7 +181,7 @@ class ForwardService : Service() {
 
     // ── 狀態管理 ──────────────────────────────────────────────────────────
 
-    private fun updateState(state: State) {
+    private fun updateState(state: State, updateHttpClient: Boolean = true) {
         if (_currentState != state) {
             _currentState = state
             // 更新前台通知文字
@@ -216,15 +254,14 @@ class ForwardService : Service() {
         const val EXTRA_STATE = "state"
         const val EXTRA_TIMESTAMP = "timestamp_ms"
 
+        // URL 設定
+        private const val DEFAULT_URL = "http://127.0.0.1:8580"
+        private const val WIFI_DEFAULT = ""  // 無預設，用戶手動設定
+
         // 當前連接狀態（線程安全用於單線程 executor，讀取用 @Volatile）
         @Volatile
         private var _currentState = State.DISCONNECTED
         val currentState: State get() = _currentState
-
-        fun getServerUrl(context: Context): String {
-            // TODO: 從 SharedPreferences 讀取可配置 URL
-            return "http://127.0.0.1:8580"
-        }
 
         fun getOrCreateDeviceId(context: Context): String {
             val prefs = context.getSharedPreferences("smsbridge", Context.MODE_PRIVATE)

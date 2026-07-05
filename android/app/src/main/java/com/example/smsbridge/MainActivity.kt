@@ -32,6 +32,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -216,6 +217,48 @@ fun SmsBridgeApp(onRequestPermissions: () -> Unit) {
                 onClick = { logEntries.clear() },
             ) {
                 Text("清除日誌")
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        // ── WiFi 備份 URL 設定 ──
+        var showWifiSettings by remember { mutableStateOf(false) }
+        Button(
+            onClick = { showWifiSettings = !showWifiSettings },
+        ) {
+            Text(if (showWifiSettings) "隱藏 WiFi 設定" else "WiFi 備份通道")
+        }
+        if (showWifiSettings) {
+            val prefs = context.getSharedPreferences("smsbridge", Context.MODE_PRIVATE)
+            var wifiUrl by remember { mutableStateOf(prefs.getString("wifi_url", "") ?: "") }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+            ) {
+                Text(
+                    text = "WiFi 備份 URL（USB 斷線時自動切換）",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(4.dp))
+                OutlinedTextField(
+                    value = wifiUrl,
+                    onValueChange = { wifiUrl = it },
+                    placeholder = { Text("http://192.168.1.100:8580") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+                Spacer(Modifier.height(4.dp))
+                Button(
+                    onClick = {
+                        prefs.edit().putString("wifi_url", wifiUrl.ifEmpty { null }).apply()
+                    },
+                ) {
+                    Text("儲存")
+                }
             }
         }
 
