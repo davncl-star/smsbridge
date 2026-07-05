@@ -28,6 +28,18 @@ class FilterEngine:
                 len(self._patterns),
             )
 
+    @property
+    def enabled(self) -> bool:
+        return self._enabled
+
+    @property
+    def keywords(self) -> list[str]:
+        return list(self._keywords)
+
+    @property
+    def patterns(self) -> list[re.Pattern]:
+        return list(self._patterns)
+
     def should_forward(self, sms: IncomingSMS) -> bool:
         """返回 True 表示該放行（轉發），False 表示攔截。"""
         if not self._enabled or (not self._keywords and not self._patterns):

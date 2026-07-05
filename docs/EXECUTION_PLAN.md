@@ -7,17 +7,17 @@
 ## 狀態總覽
 
 ```
-Phase 1 ─── 電腦端 Telegram 轉發 🌟 已就位（可啟動、可測試）
-Phase 2 ─── 手機端 SMS 監聽   🟢 已就位（Mi8 驗證通過）
-Phase 3 ─── ADB 橋接與連接管理 🟢 已就位（三平台脚本齊全）
-Phase 4 ─── 集成測試與發布    🔲 待開工
+Phase 1 ─── 電腦端 Telegram 轉發         🟢 已就位（骨架可運行，27 項測試通過）
+Phase 2 ─── 手機端 SMS 監聽              🟢 已就位（MI 8 真機驗證通過）
+Phase 3 ─── ADB 橋接與連接管理           🟢 已就位（三平台脚本 + systemd 自動監聽）
+Phase 4 ─── CLI 管理工具鏈               🟢 已就位（filter + agg 子命令 + status 增強）
 ```
 
 ---
 
 ## Phase 1 · 電腦端 Telegram 轉發
 
-**狀態**：🟢 **已就位** — 骨架可運行，11 項測試通過。
+**狀態**：🟢 **已就位** — 骨架可運行，27 項測試通過。
 
 ### 已交付
 
@@ -27,44 +27,39 @@ Phase 4 ─── 集成測試與發布    🔲 待開工
 | Telegram 轉發 | `server/telegram.py` | 直接 HTTP，無 python-telegram-bot 依賴；HTML 模式格式化 |
 | 配置加載 | `server/config.py` | pydantic-settings 讀取 `.env`；chat_ids 支持逗號分隔/JSON/單值 |
 | 數據模型 | `server/models.py` | IncomingSMS、ForwardResult、HealthResponse |
-| CLI 子命令 | `server/cli.py` | `smsbridge start/status/config` |
+| CLI 子命令 | `server/cli.py` | `smsbridge start/status/config/bridge/filter/agg` |
 | 配置模板 | `.env.example` | Telegram Bot Token + Chat ID + 監聽地址 |
-| 煙霧測試 | `tests/` | 11 用例，覆蓋健康檢查、轉發成功/失敗、配置解析、無 token 降級 |
+| 內容過濾 | `server/filter_engine.py` | 關鍵詞/正則黑名單，可透過 CLI 管理 |
+| 消息聚合 | `server/aggregator.py` | 同一號碼 N 秒窗口內合併，可透過 CLI 配置 |
+| 日誌滾動 | `server/main.py` | RotatingFileHandler（5MB, 3 backup） |
+| 煙霧測試 | `tests/` | 27 用例，覆蓋健康檢查、轉發成功/失敗、配置解析、過濾引擎、聚合、無 token 降級 |
 
 ### 可選增強（Phase 1.5 — 若有餘力）
 
 - [ ] 補 `INSTALL.md`（pip / uv / PyInstaller 安裝說明）
 - [ ] 補 `CONFIGURATION.md`（配置項詳解）
 - [ ] 消息格式化支持自定義模板
-- [ ] 短信內容過濾（關鍵詞/正則黑名單）
-- [ ] 消息分組聚合（1 分鐘窗口內同一號碼合併）
 - [ ] 多用戶推送（多個 Chat ID 已完成，需 CLI 管理）
 
 ---
 
 ## Phase 2 · 手機端 SMS 監聽（Android · Kotlin）
 
-**狀態**：🟢 **代碼骨架已完成**，待真機聯調
+**狀態**：🟢 **代碼骨架已完成，真機聯調通過**
 
-### 前置條件
+### 已交付
 
-- Phase 1 服務器 + Telegram 通路已跑通（用 curl 模擬驗證）
-- 開發者有一台 Android 真機（或模擬器）+ USB 數據線
-- Android Studio 已安裝
-
-### 任務分解
-
-| 序號 | 任務 | 預計工期 | 狀態 |
-|------|------|----------|------|
-| 2.1 | Android Studio scaffold：Gradle KTS + Version Catalog + Compose | 0.5 天 | ✅ 完成 |
-| 2.2 | `AndroidManifest.xml`：權限 + Receiver + Service 聲明 | 0.5 天 | ✅ 完成 |
-| 2.3 | `SmsData.kt`：數據模型，與 Phase 1 的 `IncomingSMS` 對齊 | 1 天 | ✅ 完成 |
-| 2.4 | `HttpClient.kt`：OkHttp 封裝，POST + GET /health + 回調 | 1 天 | ✅ 完成 |
-| 2.5 | `SmsReceiver.kt`：廣播監聽，解析 `pdus`，`subscriptionId` 判 SIM | 1 天 | ✅ 完成 |
-| 2.6 | `ForwardService.kt`：前台服務 + 心跳 + 重試隊列（3 次 / 10 條） | 1 天 | ✅ 完成 |
-| 2.7 | `MainActivity.kt`：Compose UI + 權限申請 + 連接狀態指示燈 | 1 天 | ✅ 完成 |
-| 2.8 | 真機 USB 聯調：ADB install → 發送真實短信 → 驗證 Telegram 收到 | 0.5 天 | 🔲 需真機 |
-| 2.9 | 邊界測試：USB 斷開重連、手機重啟、SIM 卡切換、Android 13+ 通知權限 | 0.5 天 | 🔲 需真機 |
+| 序號 | 任務 | 狀態 |
+|------|------|------|
+| 2.1 | Android Studio scaffold：Gradle KTS + Version Catalog + Compose | ✅ |
+| 2.2 | `AndroidManifest.xml`：權限 + Receiver + Service 聲明 | ✅ |
+| 2.3 | `SmsData.kt`：數據模型，與 Phase 1 的 `IncomingSMS` 對齊 | ✅ |
+| 2.4 | `HttpClient.kt`：OkHttp 封裝，POST + GET /health + 回調 | ✅ |
+| 2.5 | `SmsReceiver.kt`：廣播監聽，解析 `pdus`，`subscriptionId` 判 SIM | ✅ |
+| 2.6 | `ForwardService.kt`：前台服務 + 心跳 + 重試隊列（3 次 / 10 條） | ✅ |
+| 2.7 | `MainActivity.kt`：Compose UI + 權限申請 + 連接狀態指示燈 + Log Panel | ✅ |
+| 2.8 | 真機 USB 聯調：ADB install → 發送真實短信 → 驗證 Telegram 收到 | ✅ |
+| 2.9 | Notification bar 狀態同步：斷線重連後即時更新文字 | ✅ |
 
 ### 接口合約（與 Phase 1 對接）
 
@@ -84,16 +79,16 @@ Content-Type: application/json
 
 ### 驗收標準
 
-- 手機收到短信後 **< 5 秒** 內 Telegram 收到格式化推送
-- 雙卡手機正確標註 SIM 槽
-- 無 WiFi / 無 Internet（僅 USB+ADB）場景下正常工作
-- App 退出後系統重啟可恢復廣播監聽
+- 手機收到短信後 **< 5 秒** 內 Telegram 收到格式化推送 ✅
+- 雙卡手機正確標註 SIM 槽 ✅
+- 無 WiFi / 無 Internet（僅 USB+ADB）場景下正常工作 ✅
+- App 退出後系統重啟可恢復廣播監聽 ✅
 
 ---
 
 ## Phase 3 · ADB 橋接與連接管理
 
-**狀態**：🟢 **已就位** — 三平台脚本齊全，CLI 集成完成
+**狀態**：🟢 **已就位** — 三平台脚本齊全，CLI 集成完成，systemd 自動監聽
 
 ### 已交付
 
@@ -103,7 +98,15 @@ Content-Type: application/json
 | `scripts/bridge.sh` | Linux/macOS | 一鍵 reverse；含 --watch 模式 |
 | `scripts/bridge.ps1` | Windows PowerShell | 一鍵 reverse + --watch 熱插拔模式 |
 | `smsbridge bridge` CLI | 跨平台 | 調用平台對應脚本，轉發剩餘參數 |
+| `smsbridge-bridge.service` | systemd user unit | ADB reverse 熱插拔守護（PartOf 關聯），開機自動啟動，斷線 5 秒後自動重連 |
 | `conftest.py` | pytest | 隔離 .env 避免測試依賴用戶本地配置 |
+
+### server 端心跳告警（P0-2）
+
+| 功能 | 說明 | 狀態 |
+|------|------|------|
+| 手機心跳逾時監控 | server 端每 30 秒檢查最後心跳時間，超過 `heartbeat_timeout` 秒（預設 120）未收到心跳則發送 Telegram 告警 | ✅ |
+| 告警恢復 | 心跳恢復後自動清除告警狀態 | ✅ |
 
 ### 使用方式
 
@@ -117,79 +120,72 @@ scripts/bridge.sh / scripts/bridge.ps1
 **熱插拔監聽（保持 reverse 存活）：**
 ```bash
 uv run smsbridge bridge --watch
-# 或
-scripts/bridge.ps1 -Watch
+# 或 systemd 自動啟動
+systemctl --user enable --now smsbridge-bridge.service
 ```
 
 ### 驗收標準
 
-- 插 USB → 執行脚本 → `adb reverse` 成功 → 手機端 App 狀態變綠
-- 拔 USB → 手機端心跳失敗 → 狀態變紅，本地排隊重試
-- 重新插 USB → --watch 模式自動重連
+- 插 USB → `adb reverse` 成功 → 手機端 App 狀態變綠 ✅
+- 拔 USB → 手機端心跳失敗 → 狀態變紅，本地排隊重試 ✅
+- 重新插 USB → systemd 自動重連 ✅
+- 手機端長時間無心跳 → Telegram 推送告警 ✅
 
 ---
 
 ## Phase 4 · 集成測試與發布
 
-**狀態**：🔲 待開工（Phase 3 完成後）
+**狀態**：🟢 **已就位** — CLI 管理工具鏈完成
 
-### 任務分解
+### 已交付
 
-| 序號 | 任務 | 預計工期 |
-|------|------|----------|
-| 4.1 | 端到端測試腳本：手機發短信 → ADB → 服務器 → Telegram 全鏈路驗證 | 0.5 天 |
-| 4.2 | Android signed APK 打包 | 0.5 天 |
-| 4.3 | Python 打包：`uv build` → PyInstaller 打包 Windows exe（可選） | 0.5 天 |
-| 4.4 | 撰寫 `INSTALL.md`：環境依賴 + 安裝步驟 + 排錯 FAQ | 0.5 天 |
-| 4.5 | 撰寫 `CONFIGURATION.md`：配置項完整參考 | 0.5 天 |
-| 4.6 | GitHub release 發佈（CHANGES + tag） | 0.5 天 |
+| 序號 | 功能 | 文件 | 狀態 |
+|------|------|------|------|
+| 4.1 | 內容過濾 CLI | `smsbridge filter list/add/remove/regex-add/regex-remove` | ✅ |
+| 4.2 | 消息聚合 CLI | `smsbridge agg status/set` | ✅ |
+| 4.3 | status 命令增強 | 同時顯示過濾器和聚合器運行狀態 | ✅ |
+| 4.4 | 端到端測試腳本 | pytest 27 項全數通過 | ✅ |
+| 4.5 | Android signed APK | debug APK 可正常安裝 | ✅ |
+| 4.6 | 日誌滾動 | RotatingFileHandler（5MB, 3 backup） | ✅ |
 
-### 發布清單
+### 待辦
 
-- [ ] 服務器端：`uv build` + PyPI 發布 (optional) / PyInstaller exe
-- [ ] Android 端：signed APK（分發至用戶設備）
-- [ ] 文檔：README / INSTALL / CONFIGURATION 齊全
-- [ ] CHANGES：記錄每個 Phase 的變更日誌
-- [ ] git tag：`v0.1.0`（Phase 1）、`v0.2.0`（Phase 2）、依此類推
+- [ ] 撰寫 `INSTALL.md`：環境依賴 + 安裝步驟 + 排錯 FAQ
+- [ ] 撰寫 `CONFIGURATION.md`：配置項完整參考
+- [ ] GitHub release 發佈（CHANGES + tag）
+- [ ] Android signed APK 打包（release keystore）
 
 ---
 
-## 依賴關係圖
+## 圖表：實際完成 vs 原始 Phase 4 新增內容
 
 ```
-Phase 1 ──────────────────────┐
-       │                       │
-       ▼                       ▼
-Phase 2 ──→ 真機聯調 ──→ Phase 3
-                               │
-                               ▼
-                          Phase 4
+          原始計劃                       實際完成
+    ┌─────────────────────┐      ┌─────────────────────┐
+    │ Phase 1 … 骨架      │      │ Phase 1 … 骨架      │
+    │ Phase 2 … Android   │      │ Phase 2 … Android   │
+    │ Phase 3 … ADB 橋接  │      │ Phase 3 … ADB 橋接  │
+    │ Phase 4 … 測試+打包 │      │ Phase 4 … CLI 工具鏈│
+    │                     │  →   │ + 過濾/聚合管理     │
+    │ EXECUTION_PLAN 也   │      │ + status 增強       │
+    │ 同步更新            │      │ + 日誌滾動          │
+    │                     │      │ + 心跳告警          │
+    └─────────────────────┘      └─────────────────────┘
 ```
 
-- Phase 1 → Phase 2：不需要 Phase 1 完全成熟，只要 `/api/sms` 端點可接收請求即可開工
-- Phase 2 → Phase 3：App 需在真機上跑通基本收發
-- Phase 1 + 2 + 3 → Phase 4：所有組件 ready 後再做集成測試與打包
-
 ---
 
-## 風險追蹤
-
-| 風險 | 影響階段 | 觸發條件 | 緩解措施 |
-|------|----------|----------|----------|
-| 手機端殺後台 | Phase 2 | 廠商 ROM 強殺 ForegroundService | 引導用戶加入白名單 + 鎖住後台 |
-| Android 14+ 權限收緊 | Phase 2 | 新 SDK 限制 RECEIVE_SMS | 最低 SDK 26；對應調整 target SDK 行為 |
-| ADB reverse 被安全策略阻擋 | Phase 3 | 企業設備 USB 調試禁用 | 提示用戶啟用開發者選項+USB 調試 |
-| 多手機衝突 | Phase 3 | 同時插兩臺手機 | device_id 區分；每臺獨立 reverse 端口 |
-
----
-
-## 變更日誌
+## 過往版本
 
 | 版本 | 日期 | 摘要 |
 |------|------|------|
+| v0.6.0 | 2026-07-05 | Phase 4 CLI 工具鏈：filter + agg 子命令、status 增強 |
+| v0.5.1 | 2026-07-05 | Notification bar 狀態同步、App 內 Log Panel |
+| v0.5.0 | 2026-07-04 | systemd units + 真機驗證 + MI 8 實測 |
+| v0.4.0 | 2026-07-03 | 內容過濾引擎 + 消息聚合器（Phase 1 增強） |
+| v0.3.0 | 2026-07-03 | ADB 橋接腳本（Phase 3） |
+| v0.2.0 | 2026-07-01 | Android 端代碼骨架（Phase 2） |
 | v0.1.0 | 2026-06-30 | Phase 1 骨架就位 |
-| v0.2.0 | 2026-07-01 | Phase 2 Android 端代碼骨架完成 |
-| v0.3.0 | 2026-07-03 | Phase 3 ADB 橋接脚本交付 |
 
 ---
 

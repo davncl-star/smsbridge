@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0] — 2026-07-05
+
+### Added — Phase 4 · CLI 管理工具鏈
+
+- **`smsbridge filter list/add/remove/regex-add/regex-remove`** CLI 子命令
+  - 查看和管理關鍵詞/正則黑名單，自動寫回 `.env` 持久化
+  - 無需手動編輯配置檔
+- **`smsbridge agg status/set`** CLI 子命令
+  - 查看和設置消息聚合窗口秒數（0=關閉）
+  - 即時寫回 `.env`
+- **`smsbridge status`** 命令增強：現在同時顯示過濾器和聚合器狀態
+- **`FilterEngine`** 新增 `enabled`、`keywords`、`patterns` 唯讀屬性
+
+### Changed
+
+- `server/cli.py`：新增 filter 和 agg 子解析器
+- `server/filter_engine.py`：新增 `@property` 存取子
+
+---
+
 ## [0.5.1] — 2026-07-05
 
 ### Added
