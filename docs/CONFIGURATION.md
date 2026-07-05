@@ -195,6 +195,34 @@ AGGREGATE_WINDOW=60
 
 ---
 
+### `TLS_CERTFILE` / `TLS_KEYFILE`
+
+- **功能**：啟用 HTTPS 支援，用於 WiFi 直連或非本地部署場景
+- **預設**：無（HTTP 模式）
+- **格式**：PEM 編碼的憑證與私鑰檔案路徑
+
+**產生自簽憑證：**
+
+```bash
+bash scripts/gen-certs.sh --host 192.168.1.100
+# 產出: server/certs/server.crt + server/certs/server.key
+```
+
+**啟動方式：**
+
+```bash
+# CLI 參數（優先）
+uv run smsbridge start --tls-cert server/certs/server.crt --tls-key server/certs/server.key
+
+# 或在 .env 設定
+TLS_CERTFILE=server/certs/server.crt
+TLS_KEYFILE=server/certs/server.key
+```
+
+> ⚠️ 自簽憑證不被 Android 原生信任。手機端需先安裝憑證至信任 CA。
+
+---
+
 ### `TELEGRAM_DISABLE_PREVIEW`
 
 - `True`（預設）— 關閉連結預覽

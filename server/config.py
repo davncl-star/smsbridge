@@ -86,6 +86,20 @@ class Settings(BaseSettings):
     log_max_bytes: int = 5 * 1024 * 1024  # 5MB
     log_backup_count: int = 3
 
+    # TLS（P2-8 可選 HTTPS）
+    tls_certfile: Path | None = Field(
+        None,
+        description="TLS 憑證檔案路徑（PEM），啟用後 server 以 HTTPS 運行",
+    )
+    tls_keyfile: Path | None = Field(
+        None,
+        description="TLS 私鑰檔案路徑（PEM）",
+    )
+
+    @property
+    def tls_enabled(self) -> bool:
+        return bool(self.tls_certfile) and bool(self.tls_keyfile)
+
     # 心跳告警（P0-2）
     heartbeat_timeout: int = Field(
         120,

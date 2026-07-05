@@ -51,3 +51,7 @@ records/\"_commit_msg.txt\"
 \"_commit*.txt\"  
 _commit*.txt 
 .understand-anything/
+
+# TLS certs (自簽憑證，每臺機器不同)
+server/certs/*.crt
+server/certs/*.key

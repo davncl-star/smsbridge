@@ -15,12 +15,23 @@ def cmd_start(args: argparse.Namespace) -> int:
     from .config import get_settings
     s = get_settings()
     s.log_file.parent.mkdir(parents=True, exist_ok=True)
-    print(f"start smsbridge @ http://{s.server_host}:{s.server_port}")
+
+    # 優先 CLI 參數，其次環境變量，最後預設
+    cert = args.tls_cert or s.tls_certfile
+    key = args.tls_key or s.tls_keyfile
+
+    scheme = "https" if (cert and key) else "http"
+    print(f"start smsbridge @ {scheme}://{s.server_host}:{s.server_port}")
+    if cert and key:
+        print(f"  tls cert={cert}  key={key}")
+
     uvicorn.run(
         "server.main:app",
         host=s.server_host,
         port=s.server_port,
         log_level=s.log_level.lower(),
+        ssl_certfile=str(cert) if cert else None,
+        ssl_keyfile=str(key) if key else None,
     )
     return 0
 
@@ -232,7 +243,18 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="smsbridge", description="SMS → Telegram forwarding daemon")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    sub.add_parser("start", help="啟動本地 HTTP 服務器").set_defaults(func=cmd_start)
+    start_p = sub.add_parser("start", help="啟動服務器（HTTP 或 HTTPS）")
+    start_p.add_argument(
+        "--tls-cert",
+        default=None,
+        help="TLS 憑證檔案路徑（PEM），指定後啟用 HTTPS",
+    )
+    start_p.add_argument(
+        "--tls-key",
+        default=None,
+        help="TLS 私鑰檔案路徑（PEM）",
+    )
+    start_p.set_defaults(func=cmd_start)
     sub.add_parser("status", help="查看配置/日誌/過濾器/聚合狀態").set_defaults(func=cmd_status)
     sub.add_parser("config", help="打印當前生效配置").set_defaults(func=cmd_config)
 
